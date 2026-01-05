@@ -82,33 +82,30 @@ hsx define component CalendarPicker
     const errorDiv = document.getElementById('insertError');
 
     btn.addEventListener('click', async () => {
-      errorDiv.textContent = ''; // clear previous errors
+      errorDiv.textContent = '';
 
       const date = document.getElementById('dateInput').value;
       const day = document.getElementById('dayInput').value;
       const title = document.getElementById('titleInput').value || 'New Event';
       const description = document.getElementById('descInput').value || '';
 
-      // Using test user ID for now
-      const userId = '00000000-0000-0000-0000-000000000000';
+      const userId = '00000000-0000-0000-0000-000000000000'; // test user ID
 
       try {
         const { data, error } = await window.supabase
           .from('events')
           .insert([{ user_id: userId, date, day, title, description }])
-          .select(); // fetch inserted row
+          .select();
 
         if (error) {
-          // Display full error text in the UI
           errorDiv.textContent = "Supabase Error: " + JSON.stringify(error, null, 2);
           console.error("Supabase insert failed:", error);
         } else {
-          errorDiv.textContent = ''; // clear error if successful
+          errorDiv.textContent = '';
           alert('Event added! 🎉');
           window.loadEvents();
         }
       } catch (ex) {
-        // Unexpected JS errors
         errorDiv.textContent = "Unexpected Error: " + ex.toString();
         console.error("Unexpected error:", ex);
       }
