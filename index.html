@@ -32,21 +32,16 @@
   <script type="module">
     import { HSXRuntime } from './hsx-runtime.js';
 
-    async function loadCalendarHSX() {
-      const hsx = new HSXRuntime();
+    const hsx = new HSXRuntime();
 
-      // Optional: initialize Pyodide if needed
-      await hsx.initPyodide();
-
-      // Load the Calendar.hsx file
-      await hsx.load('./calendar.hsx');
-    }
-
-    loadCalendarHSX();
+    // Just like the working example: use load() directly
+    hsx.load("calendar.hsx");
   </script>
 
   <!-- Optional: drag-and-drop support for HSX files -->
-  <script>
+  <script type="module">
+    import { HSXRuntime } from './hsx-runtime.js';
+
     const dropZone = document.getElementById('drop-zone');
     dropZone.addEventListener('dragover', e => e.preventDefault());
     dropZone.addEventListener('drop', async e => {
