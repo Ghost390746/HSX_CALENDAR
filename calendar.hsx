@@ -57,6 +57,7 @@ hsx define component FetchEventsModule
 hsx end
 
 // =======================
+// =======================
 // Calendar Picker Component
 // =======================
 hsx define component CalendarPicker
@@ -74,6 +75,7 @@ hsx define component CalendarPicker
       </select>
     </label>
     <label>Title: <input type="text" id="titleInput" placeholder="Event title" /></label>
+    <label>Description: <input type="text" id="descInput" placeholder="Optional description" /></label>
     <button id="addEventBtn">Add Event</button>
   </div>
 
@@ -83,10 +85,21 @@ hsx define component CalendarPicker
       const date = document.getElementById('dateInput').value;
       const day = document.getElementById('dayInput').value;
       const title = document.getElementById('titleInput').value || 'New Event';
+      const description = document.getElementById('descInput').value || '';
 
-      const { data, error } = await window.supabase
-        .from('events')
-        .insert([{ date, day, title }]);
+      // Get current logged-in user
+      const user = window.supabase.auth.user();
+      if (!user) return alert("⚠️ You must be signed in to add events!");
+
+     const { data, error } = await window.supabase
+  .from('events')
+  .insert([{
+    user_id: '00000000-0000-0000-0000-000000000000', // test user ID
+    date,
+    day,
+    title,
+    description
+  }]);
 
       if (error) alert('Error: ' + error.message);
       else {
@@ -95,16 +108,6 @@ hsx define component CalendarPicker
       }
     });
   }
-hsx end
-
-// =======================
-// Event List Component
-// =======================
-hsx define component EventList
-  <div id="event-list" style="margin:20px;">
-    <h3>Your Events</h3>
-    <ul id="eventsUl"></ul>
-  </div>
 hsx end
 
 // =======================
