@@ -57,11 +57,9 @@ hsx define component FetchEventsModule
 hsx end
 
 // =======================
-// =======================
-// Calendar Picker Component
-// =======================
 hsx define component CalendarPicker
   <div id="calendar-picker" style="margin:20px;">
+    <div id="insertError" style="color:red; font-weight:bold; margin-bottom:10px;"></div>
     <label>Date: <input type="date" id="dateInput" /></label>
     <label>Day: 
       <select id="dayInput">
@@ -81,34 +79,43 @@ hsx define component CalendarPicker
 
   {js
     const btn = document.getElementById('addEventBtn');
+    const errorDiv = document.getElementById('insertError');
+
     btn.addEventListener('click', async () => {
+      errorDiv.textContent = ''; // clear previous errors
+
       const date = document.getElementById('dateInput').value;
       const day = document.getElementById('dayInput').value;
       const title = document.getElementById('titleInput').value || 'New Event';
       const description = document.getElementById('descInput').value || '';
 
-      // Get current logged-in user
-      const user = window.supabase.auth.user();
-      if (!user) return alert("⚠️ You must be signed in to add events!");
+      // Using test user ID for now
+      const userId = '00000000-0000-0000-0000-000000000000';
 
-     const { data, error } = await window.supabase
-  .from('events')
-  .insert([{
-    user_id: '00000000-0000-0000-0000-000000000000', // test user ID
-    date,
-    day,
-    title,
-    description
-  }]);
+      try {
+        const { data, error } = await window.supabase
+          .from('events')
+          .insert([{ user_id: userId, date, day, title, description }])
+          .select(); // fetch inserted row
 
-      if (error) alert('Error: ' + error.message);
-      else {
-        alert('Event added! 🎉');
-        window.loadEvents();
+        if (error) {
+          // Display full error text in the UI
+          errorDiv.textContent = "Supabase Error: " + JSON.stringify(error, null, 2);
+          console.error("Supabase insert failed:", error);
+        } else {
+          errorDiv.textContent = ''; // clear error if successful
+          alert('Event added! 🎉');
+          window.loadEvents();
+        }
+      } catch (ex) {
+        // Unexpected JS errors
+        errorDiv.textContent = "Unexpected Error: " + ex.toString();
+        console.error("Unexpected error:", ex);
       }
     });
   }
 hsx end
+
 
 // =======================
 // Fun feature demonstration (interactive)
