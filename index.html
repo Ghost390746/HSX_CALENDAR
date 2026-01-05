@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar Cloud</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📅 Calendar Cloud</h1>
+
+  <!-- Drop Zone (optional) -->
+  <div id="drop-zone" style="border: 2px dashed #666; padding: 20px; margin: 20px; text-align:center;">
+    📂 Drop HSX files here
+  </div>
+
+  <!-- HSX Runtime -->
+  <script type="module" src="./hsx-runtime.js"></script>
+
+  <!-- Load Calendar.hsx -->
+  <script type="module">
+    import { HSXRuntime } from './hsx-runtime.js';
+
+    async function loadCalendarHSX() {
+      const hsx = new HSXRuntime();
+
+      // Optional: initialize Pyodide if needed
+      await hsx.initPyodide();
+
+      // Load the Calendar.hsx file
+      await hsx.load('./calendar.hsx');
+    }
+
+    loadCalendarHSX();
+  </script>
+
+  <!-- Optional: drag-and-drop support for HSX files -->
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', e => e.preventDefault());
+    dropZone.addEventListener('drop', async e => {
+      e.preventDefault();
+      for (const file of e.dataTransfer.files) {
+        if (file.name.endsWith('.hsx')) {
+          const hsx = new HSXRuntime();
+          await hsx.loadFromFile(file);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

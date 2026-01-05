@@ -1,0 +1,31 @@
+// fetchEvents.ps
+hsx define component FetchEventsModule
+  {js
+    async function loadEvents() {
+      const { data, error } = await window.supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+
+      const ul = document.getElementById('eventsUl');
+      if (!ul) return; // safety check
+      ul.innerHTML = '';
+
+      if (data) {
+        data.forEach(e => {
+          const li = document.createElement('li');
+          li.textContent = `${e.date} (${e.day}): ${e.title}`;
+          ul.appendChild(li);
+        });
+      }
+
+      if (error) console.error("Error loading events:", error);
+    }
+
+    // Expose globally so other components can refresh the list
+    window.loadEvents = loadEvents;
+
+    // Run immediately when module loads
+    loadEvents();
+  }
+hsx end

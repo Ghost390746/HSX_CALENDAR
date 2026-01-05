@@ -1,0 +1,164 @@
+// ===== Calendar Cloud HSX =====
+
+// Attach a banner image
+hsx attach image "https://cdn-icons-png.flaticon.com/512/747/747310.png"
+
+// =======================
+// Module: supabaseInit.ps
+// =======================
+hsx modules: create > supabaseInit.ps
+
+hsx define component SupabaseModule
+  {js
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://vtdakdiebugurbboniex.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0ZGFrZGllYnVndXJiYm9uaWV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0NzI5MDQsImV4cCI6MjA3NzA0ODkwNH0.j6mLhZKuuY-EgZbkZsQ-uUtYXugHOyW2lwD4WYtAaDs';
+    
+    window.supabase = createClient(supabaseUrl, supabaseKey);
+
+    console.log("Supabase initialized! 🌤️");
+  }
+hsx end
+
+// =======================
+// Module: fetchEvents.ps
+// =======================
+hsx modules: create > fetchEvents.ps
+
+hsx define component FetchEventsModule
+  {js
+    async function loadEvents() {
+      const { data, error } = await window.supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+
+      const ul = document.getElementById('eventsUl');
+      ul.innerHTML = '';
+
+      if (data) {
+        data.forEach(e => {
+          const li = document.createElement('li');
+          li.textContent = `${e.date} (${e.day}): ${e.title}`;
+          ul.appendChild(li);
+        });
+      }
+
+      if (error) console.error(error);
+    }
+
+    // Expose globally
+    window.loadEvents = loadEvents;
+
+    // Load events on module execution
+    loadEvents();
+  }
+hsx end
+
+// =======================
+// Calendar Picker Component
+// =======================
+hsx define component CalendarPicker
+  <div id="calendar-picker" style="margin:20px;">
+    <label>Date: <input type="date" id="dateInput" /></label>
+    <label>Day: 
+      <select id="dayInput">
+        <option>Monday</option>
+        <option>Tuesday</option>
+        <option>Wednesday</option>
+        <option>Thursday</option>
+        <option>Friday</option>
+        <option>Saturday</option>
+        <option>Sunday</option>
+      </select>
+    </label>
+    <label>Title: <input type="text" id="titleInput" placeholder="Event title" /></label>
+    <button id="addEventBtn">Add Event</button>
+  </div>
+
+  {js
+    const btn = document.getElementById('addEventBtn');
+    btn.addEventListener('click', async () => {
+      const date = document.getElementById('dateInput').value;
+      const day = document.getElementById('dayInput').value;
+      const title = document.getElementById('titleInput').value || 'New Event';
+
+      const { data, error } = await window.supabase
+        .from('events')
+        .insert([{ date, day, title }]);
+
+      if (error) alert('Error: ' + error.message);
+      else {
+        alert('Event added! 🎉');
+        window.loadEvents();
+      }
+    });
+  }
+hsx end
+
+// =======================
+// Event List Component
+// =======================
+hsx define component EventList
+  <div id="event-list" style="margin:20px;">
+    <h3>Your Events</h3>
+    <ul id="eventsUl"></ul>
+  </div>
+hsx end
+
+// =======================
+// Fun feature demonstration (interactive)
+// =======================
+hsx:fun
+  // Rainbow banner at top
+  const banner = document.createElement('div');
+  banner.textContent = "🎈 Welcome to Calendar Cloud! 🎈";
+  banner.style.fontSize = '24px';
+  banner.style.fontWeight = 'bold';
+  banner.style.textAlign = 'center';
+  banner.style.margin = '10px';
+  document.body.prepend(banner);
+
+  let hue = 0;
+  setInterval(() => {
+    banner.style.color = `hsl(${hue}, 100%, 50%)`;
+    hue = (hue + 5) % 360;
+  }, 100);
+
+  // Tip box above calendar picker
+  const tip = document.createElement('div');
+  tip.textContent = "💡 Tip: Add an event and watch it appear instantly!";
+  tip.style.background = "#fffae6";
+  tip.style.padding = "10px";
+  tip.style.borderRadius = "8px";
+  tip.style.textAlign = "center";
+  tip.style.margin = "10px auto";
+  tip.style.width = "fit-content";
+  document.getElementById('calendar-picker').before(tip);
+
+  // Confetti effect when user adds an event
+  const addBtn = document.getElementById('addEventBtn');
+  addBtn.addEventListener('click', () => {
+    for (let i = 0; i < 10; i++) {
+      const confetti = document.createElement('div');
+      confetti.textContent = "🎉";
+      confetti.style.position = 'absolute';
+      confetti.style.left = `${Math.random()*window.innerWidth}px`;
+      confetti.style.top = `${Math.random()*window.innerHeight}px`;
+      confetti.style.fontSize = '24px';
+      document.body.appendChild(confetti);
+      setTimeout(()=>confetti.remove(), 1200);
+    }
+  });
+
+// =======================
+// Combine and run modules
+// =======================
+hsx modules: comb eq supabaseInit.ps + fetchEvents.ps
+
+// =======================
+// Render components
+// =======================
+hsx render CalendarPicker
+hsx render EventList
